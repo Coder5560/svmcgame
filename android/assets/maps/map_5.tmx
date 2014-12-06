@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="50" height="30" tilewidth="16" tileheight="16" nextobjectid="29">
+ <objectgroup draworder="index" name="layer_enviroment">
+  <object id="2" x="384" y="160" width="208" height="32"/>
+  <object id="15" name="ground" x="48" y="48">
+   <polyline points="-16,-16 -16,400 720,400 720,-16 -16,-16"/>
+  </object>
+  <object id="16" x="208" y="256" width="160" height="32"/>
+  <object id="17" x="48" y="112">
+   <polyline points="0,0 80,0"/>
+  </object>
+  <object id="21" x="464" y="304" width="128" height="112"/>
+  <object id="24" x="112" y="384">
+   <polyline points="0,0 0,64 64,64 64,0"/>
+  </object>
+  <object id="28" name="target" x="128" y="400" width="32" height="48"/>
+ </objectgroup>
+</map>

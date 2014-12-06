@@ -1,0 +1,54 @@
+
+mixxgame.png
+format: RGBA8888
+filter: Nearest,Nearest
+repeat: none
+button
+  rotate: false
+  xy: 1, 103
+  size: 900, 150
+  orig: 900, 150
+  offset: 0, 0
+  index: -1
+ninepatch_stock
+  rotate: false
+  xy: 1, 1
+  size: 200, 100
+  orig: 200, 100
+  offset: 0, 0
+  index: -1
+ninepatch_outline
+  rotate: false
+  xy: 203, 1
+  size: 200, 100
+  orig: 200, 100
+  offset: 0, 0
+  index: -1
+ninepatch_shadow_bottom
+  rotate: false
+  xy: 405, 1
+  size: 200, 100
+  orig: 200, 100
+  offset: 0, 0
+  index: -1
+ninepatch_rounded
+  rotate: false
+  xy: 607, 1
+  size: 200, 100
+  orig: 200, 100
+  offset: 0, 0
+  index: -1
+back
+  rotate: false
+  xy: 903, 193
+  size: 60, 60
+  orig: 60, 60
+  offset: 0, 0
+  index: -1
+ninepatch_none
+  rotate: false
+  xy: 809, 61
+  size: 40, 40
+  orig: 40, 40
+  offset: 0, 0
+  index: -1
