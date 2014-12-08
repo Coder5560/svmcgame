@@ -1,8 +1,10 @@
 package com.svmc.mixxgame.screens;
 
+import utils.listener.OnClickListener;
 import utils.listener.OnDoneListener;
 import utils.screen.AbstractGameScreen;
 import utils.screen.GameCore;
+import utils.ui.ForceUi;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
@@ -46,26 +48,26 @@ import com.svmc.mixxgame.attribute.GameState;
 import com.svmc.mixxgame.attribute.Level;
 import com.svmc.mixxgame.attribute.StringSystem;
 import com.svmc.mixxgame.entity.EntityMove;
-import com.svmc.mixxgame.entity.GeomatricObject;
 import com.svmc.mixxgame.entity.MapParse;
 import com.svmc.mixxgame.entity.UserData;
 
 public class GameScreen extends AbstractGameScreen implements ContactListener {
-	World					world;
-	Box2DDebugRenderer		b2dDebug;
-	Viewport				b2dViewport;
-	TiledMap				map;
-	Body					ground, ball;
-	Array<Body>				balls		= new Array<Body>();
-	Array<Body>				bodies		= new Array<Body>();
-	Array<UserData>			userDatas	= new Array<UserData>();
-	Array<GeomatricObject>	listObject	= new Array<GeomatricObject>();
+	World				world;
+	Box2DDebugRenderer	b2dDebug;
+	Viewport			b2dViewport;
+	TiledMap			map;
+	Body				ground, ball;
+	Array<Body>			balls	= new Array<Body>();
+	Array<Body>			bodies	= new Array<Body>();
 
-	EntityMove				move;
-	Rectangle				goal;
+	EntityMove			move;
+	Rectangle			goal;
 
-	UIManager				uiManager;
-	UISystem				uiSystem;
+	UIManager			uiManager;
+	UISystem			uiSystem;
+	SelectLevel			selectLevel;
+	UserDataSystem		userDataSystem;
+	ForceUi				forceUi;
 
 	public GameScreen(GameCore game) {
 		super(game);
@@ -81,14 +83,15 @@ public class GameScreen extends AbstractGameScreen implements ContactListener {
 		b2dViewport = new FitViewport(Constants.WIDTH_SCREEN
 				* Constants.WORLD_TO_BOX, Constants.HEIGHT_SCREEN
 				* Constants.WORLD_TO_BOX);
+		userDataSystem = new UserDataSystem();
 		createPhysicWorld();
 		move = new EntityMove(50, Constants.WIDTH_SCREEN - 50);
 		world.getBodies(bodies);
 		createWorldData(bodies);
-		
+
 		uiSystem = new UISystem(stage);
 		uiSystem.create();
-		uiSystem.showMenu(new OnDoneListener() {
+		uiSystem.show(new OnDoneListener() {
 
 			@Override
 			public void done() {
@@ -96,6 +99,9 @@ public class GameScreen extends AbstractGameScreen implements ContactListener {
 			}
 		});
 		uiManager = new UIManager(stage, this);
+		selectLevel = new SelectLevel(stage, selectLevelListener);
+		forceUi = new ForceUi(stage);
+		createListener();
 		setGameState(GameState.RUNING);
 	}
 
@@ -108,12 +114,16 @@ public class GameScreen extends AbstractGameScreen implements ContactListener {
 	@Override
 	public void render(float delta) {
 		super.render(delta);
-		b2dDebug.render(world, b2dViewport.getCamera().combined);
+		if (!selectLevel.isShowing()) {
+			 b2dDebug.render(world, b2dViewport.getCamera().combined);
+		}
 	}
 
 	@Override
 	public void update(float delta) {
 		world.step(1 / 60f, 8, 3);
+		selectLevel.update(delta);
+		userDataSystem.update(delta);
 		move.update(delta);
 		if (ball != null) {
 			if (direct == 1) {
@@ -133,10 +143,6 @@ public class GameScreen extends AbstractGameScreen implements ContactListener {
 			// * MathUtils.degreesToRadians);
 			ball.setLinearVelocity(0, 0);
 			ball.setType(BodyType.StaticBody);
-		}
-
-		for (UserData userData : userDatas) {
-			userData.update(delta);
 		}
 
 		if (getGameState() == GameState.RUNING) {
@@ -166,39 +172,28 @@ public class GameScreen extends AbstractGameScreen implements ContactListener {
 
 	@Override
 	public void drawBatch(SpriteBatch batch) {
-		float delta = Gdx.graphics.getDeltaTime();
-		// Assets.instance.fontFactory.getLight20().draw(batch,
-		// "FPS : " + Gdx.graphics.getFramesPerSecond(), 30,
-		// Constants.HEIGHT_SCREEN - 40);
-		//
-		// Assets.instance.fontFactory.getLight20().draw(batch,
-		// "Ball Remain : " + (Level.MAX_BALL - balls.size + count), 150,
-		// Constants.HEIGHT_SCREEN - 40);
-		//
-		// Assets.instance.fontFactory.getLight20().draw(batch,
-		// "Level : " + (Level.LEVEL), 350, Constants.HEIGHT_SCREEN - 40);
-
-		for (UserData userData : userDatas) {
-			userData.render(batch, delta);
-		}
+		userDataSystem.render(batch, Gdx.graphics.getDeltaTime());
 	}
 
-	
 	@Override
 	public void drawShapeFill(ShapeRenderer shapeRenderer) {
-		for (UserData userData : userDatas) {
+		for (UserData userData : userDataSystem.userDatas) {
 			userData.drawShapeFill(shapeRenderer);
 		}
 
 		if (starttime != 0) {
-			shapeRenderer.rect(20, Constants.HEIGHT_SCREEN - 30,
-					(System.currentTimeMillis() - starttime) / 10f, 20);
+			float distance =(System.currentTimeMillis() - starttime) / 10f;
+			float max = 420;
+			if(distance >max){
+				distance =2*max - distance;
+			}
+			shapeRenderer.rect(65, Constants.HEIGHT_SCREEN - 46, MathUtils.clamp(distance, 0, max), 22);
 		}
 	}
 
 	@Override
 	public void drawShapeLine(ShapeRenderer shapeRenderer) {
-		for (UserData userData : userDatas) {
+		for (UserData userData : userDataSystem.userDatas) {
 			userData.drawShapeLine(shapeRenderer);
 		}
 	}
@@ -238,7 +233,6 @@ public class GameScreen extends AbstractGameScreen implements ContactListener {
 		viewport.unproject(touchPoint.set(screenX, screenY));
 		{
 			float delta = (endtime - starttime) / 10f;
-			// createCircle(touchPoint.x, touchPoint.y, delta);
 			if (getGameState() == GameState.RUNING) {
 				createCircle(Constants.DEFAULT_X, Constants.DEFAULT_Y, delta);
 				starttime = 0;
@@ -281,6 +275,27 @@ public class GameScreen extends AbstractGameScreen implements ContactListener {
 		if (keycode == Keys.SPACE) {
 			reset();
 		}
+		if (keycode == Keys.A) {
+			if (!selectLevel.isShowing())
+				selectLevel.show(null);
+
+			else
+				selectLevel.hide(null);
+		}
+		if (keycode == Keys.S) {
+			if (uiSystem.isShow())
+				uiSystem.hide(null);
+			else
+				uiSystem.show(null);
+		}
+		if (keycode == Keys.D) {
+			if (userDataSystem.isShow()) {
+				userDataSystem.hide(null);
+			} else {
+				userDataSystem.show(null);
+			}
+		}
+
 		if (keycode == Keys.ESCAPE) {
 			if (uiManager.show) {
 				uiManager.disable();
@@ -453,11 +468,11 @@ public class GameScreen extends AbstractGameScreen implements ContactListener {
 	}
 
 	public void createWorldData(Array<Body> bodies) {
-		userDatas.clear();
+		userDataSystem.userDatas.clear();
 		for (Body body : bodies) {
 			if (body.getUserData() != null
 					&& body.getUserData() instanceof UserData) {
-				userDatas.add((UserData) body.getUserData());
+				userDataSystem.userDatas.add((UserData) body.getUserData());
 			}
 		}
 	}
@@ -473,6 +488,61 @@ public class GameScreen extends AbstractGameScreen implements ContactListener {
 		move = new EntityMove(50, Constants.WIDTH_SCREEN - 50);
 		world.getBodies(bodies);
 		createWorldData(bodies);
+		uiSystem = new UISystem(stage);
+		uiSystem.create();
+		uiSystem.show(new OnDoneListener() {
+			@Override
+			public void done() {
+
+			}
+		});
+		uiManager = new UIManager(stage, this);
+		selectLevel = new SelectLevel(stage, selectLevelListener);
+		createListener();
 		setGameState(GameState.RUNING);
 	}
+
+	public void createListener() {
+		uiSystem.setOnMenuClick(onMenuClick);
+	}
+
+	OnClickListener	onMenuClick			= new OnClickListener() {
+
+											@Override
+											public void onClick(int count) {
+												if (count == OnClickListener.UP) {
+													userDataSystem
+															.hide(new OnDoneListener() {
+																@Override
+																public void done() {
+																	selectLevel
+																			.show(null);
+																}
+															});
+
+												}
+												if (count == OnClickListener.DOWN) {
+													selectLevel
+															.hide(new OnDoneListener() {
+																@Override
+																public void done() {
+																	userDataSystem
+																			.show(null);
+																}
+															});
+												}
+											}
+										};
+	OnClickListener	selectLevelListener	= new OnClickListener() {
+											@Override
+											public void onClick(int count) {
+												Level.LEVEL = count;
+												Assets.instance.assetMap
+														.loadLevel(count);
+												reset();
+												uiSystem.reset(null);
+												uiSystem.menuClick = false;
+											}
+										};
+
 }

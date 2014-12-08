@@ -41,7 +41,7 @@ public class Toast {
 			LabelStyle labelStyle = new LabelStyle();
 			NinePatch patch = new NinePatch(Assets.instance.ui.reg_ninepatch2,
 					4, 4, 4, 4);
-			patch.setColor(Color.BLACK);
+			patch.setColor(Color.RED);
 			back = new Image(patch);
 			back.getColor().a = 0.9f;
 			labelStyle.font = Assets.instance.fontFactory.getLight15();

@@ -18,7 +18,8 @@ public class Assets implements Disposable, AssetErrorListener {
 
 	public AssetManager			assetManager;
 	public AssetUI				ui;
-	public AssetGame				game;
+	public AssetGame			game;
+	public AssetString			strings;
 	public AssetMap				assetMap;
 
 	public FontFactory			fontFactory;
@@ -30,26 +31,27 @@ public class Assets implements Disposable, AssetErrorListener {
 	}
 
 	public void load() {
-		assetManager.load(Constants.TEXTURE_ATLAS_NINEPATCH, TextureAtlas.class);
+		assetManager
+				.load(Constants.TEXTURE_ATLAS_NINEPATCH, TextureAtlas.class);
 		assetManager.load(Constants.TEXTURE_ATLAS_UI, TextureAtlas.class);
 		assetManager.finishLoading();
 	}
 
 	public void init() {
-		TextureAtlas atlasNinePatch = assetManager.get(Constants.TEXTURE_ATLAS_NINEPATCH);
+		TextureAtlas atlasNinePatch = assetManager
+				.get(Constants.TEXTURE_ATLAS_NINEPATCH);
 		TextureAtlas atlasUI = assetManager.get(Constants.TEXTURE_ATLAS_UI);
-		
-		
+
 		for (Texture t : atlasNinePatch.getTextures()) {
 			t.setFilter(TextureFilter.Linear, TextureFilter.Linear);
 		}
 		for (Texture t : atlasUI.getTextures()) {
 			t.setFilter(TextureFilter.Linear, TextureFilter.Linear);
 		}
-		
 
 		ui = new AssetUI(atlasNinePatch);
 		game = new AssetGame(atlasUI);
+		strings = new AssetString(atlasUI);
 		fontFactory = new FontFactory(assetManager);
 		assetMap = new AssetMap();
 	}

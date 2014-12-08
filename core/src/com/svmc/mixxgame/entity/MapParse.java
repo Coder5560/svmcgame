@@ -219,7 +219,10 @@ public class MapParse {
 		body.createFixture(fixtureDef);
 		Shape shap = fixtureDef.shape;
 		shap.dispose();
-		body.setUserData(createDefaultUserData(body, object));
+
+		UserData data = createDefaultUserData(body, object);
+		if (data != null)
+			body.setUserData(data);
 		return body;
 	}
 
@@ -262,11 +265,11 @@ public class MapParse {
 			return userData;
 		}
 
-		UserData userData = new UserData();
-		userData.body = body;
-		userData.createMove(MoveType.getMoveType(moveType));
-		userData.createEntity(EntityType.getEntityType(entityType));
-		body.setUserData(userData);
-		return userData;
+		// UserData userData = new UserData();
+		// userData.body = body;
+		// userData.createMove(MoveType.getMoveType(moveType));
+		// userData.createEntity(EntityType.getEntityType(entityType));
+		// body.setUserData(userData);
+		return null;
 	}
 }
