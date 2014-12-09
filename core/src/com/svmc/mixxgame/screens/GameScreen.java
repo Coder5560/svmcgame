@@ -535,15 +535,6 @@ public class GameScreen extends AbstractGameScreen implements ContactListener {
 		move = new EntityMove(50, Constants.WIDTH_SCREEN - 50);
 		world.getBodies(bodies);
 		createWorldData(bodies);
-		// uiSystem = new UISystem(stage);
-		// uiSystem.create();
-		// setGameState(GameState.INITIAL);
-		// uiSystem.show(new OnDoneListener() {
-		// @Override
-		// public void done() {
-		//
-		// }
-		// });
 		uiManager = new UIManager(stage, this);
 		selectLevel = new SelectLevel(stage, selectLevelListener);
 		createListener();
