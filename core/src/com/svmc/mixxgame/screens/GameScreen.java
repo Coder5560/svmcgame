@@ -46,17 +46,19 @@ import com.svmc.mixxgame.attribute.EventType;
 import com.svmc.mixxgame.attribute.GameEvent;
 import com.svmc.mixxgame.attribute.GameState;
 import com.svmc.mixxgame.attribute.Level;
+import com.svmc.mixxgame.attribute.State;
 import com.svmc.mixxgame.attribute.StringSystem;
 import com.svmc.mixxgame.entity.EntityMove;
 import com.svmc.mixxgame.entity.MapParse;
 import com.svmc.mixxgame.entity.UserData;
+import com.svmc.mixxgame.entity.UserDataCircle;
 
 public class GameScreen extends AbstractGameScreen implements ContactListener {
 	World				world;
 	Box2DDebugRenderer	b2dDebug;
 	Viewport			b2dViewport;
 	TiledMap			map;
-	Body				ground, ball;
+	Body				ground, enviroment, ball;
 	Array<Body>			balls		= new Array<Body>();
 	Array<Body>			bodies		= new Array<Body>();
 
@@ -188,15 +190,22 @@ public class GameScreen extends AbstractGameScreen implements ContactListener {
 					uiManager.show();
 				}
 			}
-		}
-
-		if (balls != null && balls.size == Level.MAX_BALL) {
-			Body body = balls.get(balls.size - 1);
-			if (!body.isAwake()) {
-				setGameState(GameState.GAME_OVER);
-				uiManager.show();
+			if (body.getUserData() != null
+					&& body.getUserData() instanceof UserData) {
+				if (((UserData) body.getUserData()).getState() == State.DISPOSE) {
+					world.destroyBody(body);
+					balls.removeValue(ball, false);
+				}
 			}
 		}
+
+		// if (balls != null && balls.size == Level.MAX_BALL) {
+		// Body body = balls.get(balls.size - 1);
+		// if (!body.isAwake()) {
+		// setGameState(GameState.GAME_OVER);
+		// uiManager.show();
+		// }
+		// }
 	}
 
 	@Override
@@ -237,12 +246,19 @@ public class GameScreen extends AbstractGameScreen implements ContactListener {
 
 	@Override
 	public void beginContact(Contact contact) {
-
 	}
 
 	@Override
 	public void endContact(Contact contact) {
-
+		if (ground != null) {
+			for (Body body : balls) {
+				if (contact.getFixtureB().getBody() == body && contact.getFixtureA().getBody() == ground
+						&& body.getUserData() != null
+						&& body.getUserData() instanceof UserData) {
+					((UserData) body.getUserData()).setState(State.DISPOSE);
+				}
+			}
+		}
 	}
 
 	@Override
@@ -317,6 +333,10 @@ public class GameScreen extends AbstractGameScreen implements ContactListener {
 		circleShape.dispose();
 		body.applyForceToCenter(new Vector2(delta, 0), true);
 		balls.add(body);
+
+		UserDataCircle userData = new UserDataCircle();
+		userData.body = body;
+		body.setUserData(userData);
 		return body;
 	}
 
@@ -383,9 +403,12 @@ public class GameScreen extends AbstractGameScreen implements ContactListener {
 		if (AssetMap.isContainLayer(map, layer_enviroment)) {
 			MapObjects objects = map.getLayers().get(layer_enviroment)
 					.getObjects();
-
 			for (MapObject object : objects) {
 				if (object.getName() != null
+						&& object.getName().equalsIgnoreCase("ground")) {
+					ground = MapParse.instance.createBodyBydefault(world,
+							object);
+				} else if (object.getName() != null
 						&& object.getName().equalsIgnoreCase("rotate")) {
 					ball = MapParse.instance.createBodyBydefault(world, object);
 					MapParse.instance.createDefaultUserData(ball, object);
@@ -402,13 +425,9 @@ public class GameScreen extends AbstractGameScreen implements ContactListener {
 					}
 				} else if (object.getName() != null
 						&& object.getName().equalsIgnoreCase("ball")) {
-					Body bd = MapParse.instance.createBodyBydefault(world,
+					MapParse.instance.createBodyBydefaultWithUserData(world,
 							object);
-					MapParse.instance.createDefaultUserData(bd, object);
 				} else {
-					// Body bd = MapParse.instance.createBodyBydefault(world,
-					// object);
-					// MapParse.instance.createDefaultUserData(bd, object);
 					MapParse.instance.createBodyBydefaultWithUserData(world,
 							object);
 				}
@@ -528,6 +547,7 @@ public class GameScreen extends AbstractGameScreen implements ContactListener {
 		count = 0;
 		goal = null;
 		ball = null;
+		ground = null;
 		balls.clear();
 		world.dispose();
 		world = new World(new Vector2(0, -10f), true);
