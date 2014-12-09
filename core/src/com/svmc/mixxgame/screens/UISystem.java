@@ -18,6 +18,8 @@ import com.badlogic.gdx.utils.Array;
 import com.svmc.mixxgame.Assets;
 import com.svmc.mixxgame.attribute.Constants;
 import com.svmc.mixxgame.attribute.GameState;
+import com.svmc.mixxgame.attribute.Level;
+import com.svmc.mixxgame.attribute.Level.LevelNotify;
 import com.svmc.mixxgame.entity.UserData;
 
 public class UISystem {
@@ -31,7 +33,7 @@ public class UISystem {
 	public Array<UserData>	userDatas	= new Array<UserData>();
 	GameState				gameState;
 	boolean					show		= false;
-	public boolean					menuClick	= false;
+	public boolean			menuClick	= false;
 	OnClickListener			onMenuClick;
 
 	public UISystem(Stage stage) {
@@ -84,6 +86,10 @@ public class UISystem {
 		menuLevel.setSize(70, 70);
 		menuLevel.setVisible(false);
 		stage.addActor(menuLevel);
+	}
+
+	public void updateLevel() {
+		menuLevel.setText("" + Level.getLevel());
 	}
 
 	private void buildPosition() {
@@ -161,6 +167,15 @@ public class UISystem {
 	}
 
 	public void reset(OnDoneListener listener) {
-		
+
 	}
+
+	public LevelNotify	levelNotify	= new LevelNotify() {
+
+										@Override
+										public void notifyChange() {
+											updateLevel();
+											System.out.println("Update level");
+										}
+									};
 }

@@ -38,6 +38,8 @@ public abstract class AbstractGameScreen implements Screen, InputProcessor,
 	public void show() {
 		camera = new OrthographicCamera(Constants.WIDTH_SCREEN,
 				Constants.HEIGHT_SCREEN);
+//		viewport = new CustomViewport(Constants.WIDTH_SCREEN,
+//				Constants.HEIGHT_SCREEN, camera);
 		viewport = new StretchViewport(Constants.WIDTH_SCREEN,
 				Constants.HEIGHT_SCREEN, camera);
 

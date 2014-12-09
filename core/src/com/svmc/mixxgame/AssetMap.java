@@ -14,8 +14,8 @@ public class AssetMap {
 	}
 
 	public void loadLevel(int level) {
-		level = MathUtils.clamp(level, 1, Level.MAX_LEVEL);
-		map = new TmxMapLoader().load(getTexureByleve(Level.LEVEL));
+		level = MathUtils.clamp(level, 1, Level.getMaxLevel());
+		map = new TmxMapLoader().load(getTexureByleve(Level.getLevel()));
 	}
 
 	public static boolean isContainLayer(TiledMap map, String layerName) {

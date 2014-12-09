@@ -1,5 +1,7 @@
 package com.svmc.mixxgame.screens;
 
+import utils.factory.GamePreferences;
+
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -20,7 +22,7 @@ public class UIManager {
 	public Image		btnRefresh, btnNext, btnBack;
 	public NumberActor	countTime;
 	boolean				show	= false;
-	
+
 	GameScreen			gameScreen;
 
 	public UIManager(Stage stage, GameScreen gameScreen) {
@@ -56,12 +58,8 @@ public class UIManager {
 					int pointer, int button) {
 				super.touchUp(event, x, y, pointer, button);
 				btnBack.addAction(Actions.alpha(1f));
-				Level.LEVEL -= 1;
-				if (Level.LEVEL < 1) {
-					Level.LEVEL = 1;
-				}
-
-				Assets.instance.assetMap.loadLevel(Level.LEVEL);
+				Level.setLevel(Level.getLevel() - 1);
+				Assets.instance.assetMap.loadLevel(Level.getLevel());
 				btnRefresh.addAction(Actions.alpha(1f));
 				disable();
 				gameScreen.reset();
@@ -81,7 +79,7 @@ public class UIManager {
 			public void touchUp(InputEvent event, float x, float y,
 					int pointer, int button) {
 				super.touchUp(event, x, y, pointer, button);
-				Assets.instance.assetMap.loadLevel(Level.LEVEL);
+				Assets.instance.assetMap.loadLevel(Level.getLevel());
 				btnRefresh.addAction(Actions.alpha(1f));
 				disable();
 				gameScreen.reset();
@@ -102,11 +100,8 @@ public class UIManager {
 					int pointer, int button) {
 				super.touchUp(event, x, y, pointer, button);
 				btnNext.addAction(Actions.alpha(1f));
-				Level.LEVEL += 1;
-				if (Level.LEVEL > Level.MAX_LEVEL) {
-					Level.LEVEL = Level.MAX_LEVEL;
-				}
-				Assets.instance.assetMap.loadLevel(Level.LEVEL);
+				Level.setLevel(Level.getLevel() + 1);
+				Assets.instance.assetMap.loadLevel(Level.getLevel());
 				disable();
 				gameScreen.reset();
 			}
@@ -145,7 +140,7 @@ public class UIManager {
 
 	public void show() {
 		this.show = true;
-		if (Level.LEVEL != 1) {
+		if (Level.getLevel() != 1) {
 			btnBack.addAction(Actions.sequence(Actions.alpha(1f),
 					Actions.scaleTo(0, 0), Actions.scaleTo(1f, 1f, .5f),
 					Actions.run(new Runnable() {
@@ -175,16 +170,15 @@ public class UIManager {
 						btnRefresh.setTouchable(Touchable.enabled);
 					}
 				})));
-		if (Level.LEVEL != Level.MAX_LEVEL
+		if (Level.getLevel() != Level.getMaxLevel()
 				&& gameScreen.getGameState() == GameState.GAME_COMPLETE) {
-			int level = Level.LEVEL + 1;
-			if (level > Level.LEVEL) {
-				level = Level.MAX_LEVEL;
+			int level = Level.getLevel() + 1;
+			if (level > Level.getLevel()) {
+				level = Level.getMaxLevel();
 			}
-			// if (level > GamePreferences.instance.getLevelOpen()) {
-			// GamePreferences.instance.setLevelOpen(level);
-			// GamePreferences.instance.save();
-			// }
+			if (level > GamePreferences.getInstance().getLevelOpen()) {
+				GamePreferences.getInstance().setLevelOpen(level, true);
+			}
 			btnNext.addAction(Actions.sequence(Actions.alpha(1f),
 					Actions.scaleTo(0, 0), Actions.scaleTo(1f, 1f, .5f),
 					Actions.run(new Runnable() {
@@ -233,5 +227,5 @@ public class UIManager {
 					}
 				})));
 	}
-
+	
 }

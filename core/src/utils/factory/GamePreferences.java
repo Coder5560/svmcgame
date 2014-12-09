@@ -9,6 +9,8 @@ public class GamePreferences {
 	private static final String		HIGHSCORE	= "highscore";
 	private static final String		SOUND		= "sound";
 	private static final String		MUSIC		= "music";
+	private int						level		= 1;
+	private int						levelOpen	= 1;
 
 	public static GamePreferences getInstance() {
 		if (instance == null)
@@ -52,6 +54,25 @@ public class GamePreferences {
 
 	public void flush() {
 		prefs.flush();
+	}
+
+	public int getLevelOpen() {
+		return levelOpen;
+	}
+
+	public int getLevel() {
+		return level;
+	}
+
+	public void setLevel(int level, boolean flush) {
+		this.level = level;
+		if (flush)
+			flush();
+	}
+	public void setLevelOpen(int level, boolean flush) {
+		this.levelOpen = level;
+		if (flush)
+			flush();
 	}
 
 }

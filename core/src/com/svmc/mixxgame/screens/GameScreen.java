@@ -57,8 +57,8 @@ public class GameScreen extends AbstractGameScreen implements ContactListener {
 	Viewport			b2dViewport;
 	TiledMap			map;
 	Body				ground, ball;
-	Array<Body>			balls	= new Array<Body>();
-	Array<Body>			bodies	= new Array<Body>();
+	Array<Body>			balls		= new Array<Body>();
+	Array<Body>			bodies		= new Array<Body>();
 
 	EntityMove			move;
 	Rectangle			goal;
@@ -68,6 +68,12 @@ public class GameScreen extends AbstractGameScreen implements ContactListener {
 	SelectLevel			selectLevel;
 	UserDataSystem		userDataSystem;
 	ForceUi				forceUi;
+
+	long				starttime	= 0;
+	long				endtime		= 0;
+	Vector2				min, max, target;
+	int					direct		= 1, rotate = 0;
+	int					count		= 0;
 
 	public GameScreen(GameCore game) {
 		super(game);
@@ -92,12 +98,12 @@ public class GameScreen extends AbstractGameScreen implements ContactListener {
 		uiSystem = new UISystem(stage);
 		uiSystem.create();
 		uiSystem.show(new OnDoneListener() {
-
 			@Override
 			public void done() {
 
 			}
 		});
+		Level.setLevelNotify(uiSystem.levelNotify);
 		uiManager = new UIManager(stage, this);
 		selectLevel = new SelectLevel(stage, selectLevelListener);
 		forceUi = new ForceUi(stage);
@@ -115,15 +121,38 @@ public class GameScreen extends AbstractGameScreen implements ContactListener {
 	public void render(float delta) {
 		super.render(delta);
 		if (!selectLevel.isShowing()) {
-			 b2dDebug.render(world, b2dViewport.getCamera().combined);
+			b2dDebug.render(world, b2dViewport.getCamera().combined);
 		}
 	}
 
 	@Override
 	public void update(float delta) {
-		world.step(1 / 60f, 8, 3);
-		selectLevel.update(delta);
 		userDataSystem.update(delta);
+
+		switch (getGameState()) {
+			case INITIAL:
+				break;
+			case RUNING:
+				updateRunning(delta);
+				break;
+			case PAUSE:
+				selectLevel.update(delta);
+				break;
+			case GAME_COMPLETE:
+
+				break;
+			case GAME_OVER:
+
+				break;
+
+			default:
+				break;
+		}
+
+	}
+
+	void updateRunning(float delta) {
+		world.step(1 / 60f, 8, 3);
 		move.update(delta);
 		if (ball != null) {
 			if (direct == 1) {
@@ -144,30 +173,30 @@ public class GameScreen extends AbstractGameScreen implements ContactListener {
 			ball.setLinearVelocity(0, 0);
 			ball.setType(BodyType.StaticBody);
 		}
+		checkGameOver();
+	}
 
-		if (getGameState() == GameState.RUNING) {
-			for (Body body : balls) {
-				if (!body.isAwake()) {
-					Vector2 ballPosition = new Vector2(body.getTransform()
-							.getPosition().x * Constants.BOX_TO_WORLD, body
-							.getTransform().getPosition().y
-							* Constants.BOX_TO_WORLD);
-					if (goal != null && goal.contains(ballPosition)) {
-						setGameState(GameState.GAME_COMPLETE);
-						uiManager.show();
-					}
-				}
-			}
-
-			if (balls != null && balls.size == Level.MAX_BALL) {
-				Body body = balls.get(balls.size - 1);
-				if (!body.isAwake()) {
-					setGameState(GameState.GAME_OVER);
+	void checkGameOver() {
+		for (Body body : balls) {
+			if (!body.isAwake()) {
+				Vector2 ballPosition = new Vector2(body.getTransform()
+						.getPosition().x * Constants.BOX_TO_WORLD, body
+						.getTransform().getPosition().y
+						* Constants.BOX_TO_WORLD);
+				if (goal != null && goal.contains(ballPosition)) {
+					setGameState(GameState.GAME_COMPLETE);
 					uiManager.show();
 				}
 			}
 		}
 
+		if (balls != null && balls.size == Level.MAX_BALL) {
+			Body body = balls.get(balls.size - 1);
+			if (!body.isAwake()) {
+				setGameState(GameState.GAME_OVER);
+				uiManager.show();
+			}
+		}
 	}
 
 	@Override
@@ -182,12 +211,20 @@ public class GameScreen extends AbstractGameScreen implements ContactListener {
 		}
 
 		if (starttime != 0) {
-			float distance =(System.currentTimeMillis() - starttime) / 10f;
-			float max = 420;
-			if(distance >max){
-				distance =2*max - distance;
+			if (!forceUi.isShowing()) {
+				forceUi.show(null);
 			}
-			shapeRenderer.rect(65, Constants.HEIGHT_SCREEN - 46, MathUtils.clamp(distance, 0, max), 22);
+			float distance = (System.currentTimeMillis() - starttime) / 10f;
+			float max = 420;
+			if (distance > max) {
+				distance = 2 * max - distance;
+			}
+			shapeRenderer.rect(65, Constants.HEIGHT_SCREEN - 46,
+					MathUtils.clamp(distance, 0, max), 22);
+		} else {
+			if (forceUi.isShowing()) {
+				forceUi.hide(null);
+			}
 		}
 	}
 
@@ -218,21 +255,34 @@ public class GameScreen extends AbstractGameScreen implements ContactListener {
 
 	}
 
-	long	starttime	= 0;
-	long	endtime		= 0;
-
 	@Override
 	public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-		starttime = System.currentTimeMillis();
-		return true;
+		if (getGameState() == GameState.INITIAL) {
+			setGameState(GameState.RUNING);
+			return true;
+		}
+
+		if (getGameState() == GameState.RUNING) {
+			if (starttime == 0) {
+				starttime = System.currentTimeMillis();
+				return true;
+			}
+		}
+		return false;
 	}
 
 	@Override
 	public boolean touchUp(int screenX, int screenY, int pointer, int button) {
 		endtime = System.currentTimeMillis();
 		viewport.unproject(touchPoint.set(screenX, screenY));
-		{
+		if (starttime != 0) {
 			float delta = (endtime - starttime) / 10f;
+			float distance = (System.currentTimeMillis() - starttime) / 10f;
+			float max = 420;
+			if (distance > max) {
+				distance = 2 * max - distance;
+			}
+			delta = MathUtils.clamp(distance, 0, max);
 			if (getGameState() == GameState.RUNING) {
 				createCircle(Constants.DEFAULT_X, Constants.DEFAULT_Y, delta);
 				starttime = 0;
@@ -327,10 +377,6 @@ public class GameScreen extends AbstractGameScreen implements ContactListener {
 		map = Assets.instance.assetMap.getMap();
 		createGround();
 	}
-
-	Vector2	min, max, target;
-	int		direct	= 1, rotate = 0;
-	int		count	= 0;
 
 	void createGround() {
 		String layer_enviroment = StringSystem.LAYER_ENVIROMENT;
@@ -478,6 +524,7 @@ public class GameScreen extends AbstractGameScreen implements ContactListener {
 	}
 
 	public void reset() {
+		starttime = 0;
 		count = 0;
 		goal = null;
 		ball = null;
@@ -488,18 +535,19 @@ public class GameScreen extends AbstractGameScreen implements ContactListener {
 		move = new EntityMove(50, Constants.WIDTH_SCREEN - 50);
 		world.getBodies(bodies);
 		createWorldData(bodies);
-		uiSystem = new UISystem(stage);
-		uiSystem.create();
-		uiSystem.show(new OnDoneListener() {
-			@Override
-			public void done() {
-
-			}
-		});
+		// uiSystem = new UISystem(stage);
+		// uiSystem.create();
+		// setGameState(GameState.INITIAL);
+		// uiSystem.show(new OnDoneListener() {
+		// @Override
+		// public void done() {
+		//
+		// }
+		// });
 		uiManager = new UIManager(stage, this);
 		selectLevel = new SelectLevel(stage, selectLevelListener);
 		createListener();
-		setGameState(GameState.RUNING);
+		setGameState(GameState.INITIAL);
 	}
 
 	public void createListener() {
@@ -511,6 +559,7 @@ public class GameScreen extends AbstractGameScreen implements ContactListener {
 											@Override
 											public void onClick(int count) {
 												if (count == OnClickListener.UP) {
+													setGameState(GameState.PAUSE);
 													userDataSystem
 															.hide(new OnDoneListener() {
 																@Override
@@ -522,6 +571,7 @@ public class GameScreen extends AbstractGameScreen implements ContactListener {
 
 												}
 												if (count == OnClickListener.DOWN) {
+													setGameState(GameState.RUNING);
 													selectLevel
 															.hide(new OnDoneListener() {
 																@Override
@@ -536,7 +586,7 @@ public class GameScreen extends AbstractGameScreen implements ContactListener {
 	OnClickListener	selectLevelListener	= new OnClickListener() {
 											@Override
 											public void onClick(int count) {
-												Level.LEVEL = count;
+												Level.setLevel(count);
 												Assets.instance.assetMap
 														.loadLevel(count);
 												reset();

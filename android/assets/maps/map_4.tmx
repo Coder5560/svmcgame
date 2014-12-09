@@ -1,18 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.0" orientation="orthogonal" renderorder="right-down" width="50" height="30" tilewidth="16" tileheight="16" nextobjectid="26">
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="50" height="30" tilewidth="16" tileheight="16" nextobjectid="27">
  <objectgroup draworder="index" name="layer_enviroment">
-  <object id="2" x="384" y="160" width="208" height="32"/>
-  <object id="15" name="ground" x="48" y="48">
-   <polyline points="-16,-16 -16,400 720,400 720,-16 -16,-16"/>
+  <object id="2" x="320" y="192" width="208" height="32"/>
+  <object id="15" name="enviroment" x="48" y="48">
+   <polyline points="-48,-48 -48,432 752,432 752,-48 -48,-48"/>
   </object>
-  <object id="16" x="208" y="256" width="160" height="32"/>
-  <object id="17" x="32" y="96">
+  <object id="16" x="144" y="288" width="160" height="32"/>
+  <object id="17" name="start" x="16" y="64">
    <polyline points="0,0 80,0"/>
   </object>
-  <object id="21" x="480" y="352" width="96" height="32"/>
-  <object id="24" x="368" y="384">
+  <object id="21" x="416" y="384" width="96" height="32"/>
+  <object id="24" name="goal" x="304" y="416">
    <polyline points="0,0 0,64 64,64 64,0"/>
   </object>
-  <object id="25" name="target" x="384" y="400" width="32" height="48"/>
+  <object id="25" name="target" x="320" y="432" width="32" height="48"/>
+  <object id="26" name="ground" x="0" y="480">
+   <polyline points="0,0 288,0 304,16 368,16 384,0 800,0"/>
+  </object>
  </objectgroup>
 </map>
