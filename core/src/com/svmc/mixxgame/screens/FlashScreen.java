@@ -6,7 +6,6 @@ import utils.ui.Toast;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.scenes.scene2d.Action;
@@ -17,16 +16,19 @@ import com.svmc.mixxgame.Assets;
 import com.svmc.mixxgame.attribute.Constants;
 
 public class FlashScreen extends AbstractGameScreen {
-	Image	splash;
-	Sprite	sprite;
+	Image	imBg;
+	Image	imLogo;
 
 	boolean	loaded		= false;
 	boolean	showMessage	= false;
 
 	public FlashScreen(GameCore game) {
 		super(game);
-		sprite = new Sprite(new Texture(Gdx.files.internal("Img/images.jpeg")));
-		sprite.setSize(Constants.WIDTH_SCREEN, Constants.HEIGHT_SCREEN);
+		imBg = new Image(new Texture(Gdx.files.internal("Img/background.png")));
+		imBg.setSize(Constants.WIDTH_SCREEN, Constants.HEIGHT_SCREEN);
+		imLogo = new Image(new Texture(Gdx.files.internal("Img/logo.png")));
+		imLogo.setPosition(Constants.WIDTH_SCREEN / 2 - imLogo.getWidth() / 2,
+				Constants.HEIGHT_SCREEN / 2 - imLogo.getHeight() / 2);
 	}
 
 	@Override
@@ -64,15 +66,15 @@ public class FlashScreen extends AbstractGameScreen {
 
 	void switchScreen() {
 		if (!switchScreen) {
-			 parent.setScreen(new GameScreen(parent));
-//			parent.setScreen(new TestScreen(parent));
+			parent.setScreen(new GameScreen(parent));
+			// parent.setScreen(new TestScreen(parent));
 			switchScreen = true;
 		}
 	}
 
 	@Override
 	public void render(float delta) {
-		if (showMessage && splash.getActions().size == 0) {
+		if (showMessage && imBg.getActions().size == 0) {
 			switchScreen();
 		}
 		super.render(delta);
@@ -80,9 +82,11 @@ public class FlashScreen extends AbstractGameScreen {
 
 	@Override
 	public void drawBatch(SpriteBatch batch) {
-		if (!loaded) {
-			sprite.draw(batch);
-		}
+		float delta = Gdx.graphics.getDeltaTime();
+		imBg.act(delta);
+		imLogo.act(delta);
+		imBg.draw(batch, 1f);
+		imLogo.draw(batch, 1f);
 	}
 
 	@Override
@@ -95,10 +99,7 @@ public class FlashScreen extends AbstractGameScreen {
 	}
 
 	void buildComponent(Stage stage) {
-		splash = new Image(new Texture(Gdx.files.internal("Img/images.jpeg")));
-		splash.setSize(Constants.WIDTH_SCREEN, Constants.HEIGHT_SCREEN);
-		Action act0 = Actions.alpha(0f, 1f);
-		splash.addAction(Actions.sequence(act0));
-		stage.addActor(splash);
+		Action act1 = Actions.alpha(0f, 1f);
+		imLogo.addAction(Actions.sequence(act1));
 	}
 }

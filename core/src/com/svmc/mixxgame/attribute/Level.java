@@ -4,7 +4,7 @@ import com.badlogic.gdx.math.MathUtils;
 
 public class Level {
 
-	private static int			LEVEL				= 1;
+	private static int			LEVEL				= 2;
 	private static int			MAX_LEVEL			= 10;
 	public static int			MAX_BALL			= 5;
 

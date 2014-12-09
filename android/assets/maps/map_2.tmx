@@ -20,7 +20,7 @@
   <object id="34" name="goal" x="736" y="416">
    <polyline points="0,0 0,64 64,64 64,0"/>
   </object>
-  <object id="35" name="ground" x="0" y="480">
+  <object id="35" name="ground" x="0" y="476">
    <polyline points="0,0 736,0"/>
   </object>
  </objectgroup>
