@@ -2,6 +2,7 @@ package com.svmc.mixxgame.screens;
 
 import utils.screen.AbstractGameScreen;
 import utils.screen.GameCore;
+import utils.ui.Laser;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
@@ -15,10 +16,65 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 
 public class TestScreen extends AbstractGameScreen {
-	LineHandler	handler;
+	LineHandler		handler;
+
+	Array<Laser>	lasers	= new Array<Laser>();
 
 	public TestScreen(GameCore game) {
 		super(game);
+//		createLaser();
+		
+		Array<Vector2> vertice= new Array<Vector2>(); 
+		vertice.add(new Vector2(100, 100));
+		vertice.add(new Vector2(300, 100));
+		vertice.add(new Vector2(300, 300));
+		vertice.add(new Vector2(100, 300));
+		createLaser(vertice);
+	}
+
+	void createLaser() {
+		lasers.clear();
+		Vector2 point1 = new Vector2(100, 100);
+		Vector2 point2 = new Vector2(100, 200);
+		Vector2 point3 = new Vector2(200, 200);
+		Vector2 point4 = new Vector2(200, 100);
+		Laser laser, laser2, laser3, laser4;
+		laser = new Laser();
+		laser.startPoint.set(point1);
+		laser.endPoint.set(point2);
+		laser.drawVertice = false;
+
+		laser3 = new Laser();
+		laser3.startPoint.set(point3);
+		laser3.endPoint.set(point4);
+		laser3.drawVertice = false;
+
+		laser2 = new Laser();
+		laser2.startPoint.set(point2);
+		laser2.endPoint.set(point3);
+		laser2.drawVertice = false;
+
+		laser4 = new Laser();
+		laser4.startPoint.set(point4);
+		laser4.endPoint.set(point1);
+		laser4.drawVertice = false;
+
+		lasers.add(laser);
+		lasers.add(laser2);
+		lasers.add(laser3);
+		lasers.add(laser4);
+	}
+
+	void createLaser(Array<Vector2> vertice) {
+		lasers.clear();
+		if (vertice.size <= 1)
+			return;
+		for (int i = 0; i < vertice.size - 1; i++) {
+			Laser laser = new Laser(vertice.get(i), vertice.get(i+1), false);
+			lasers.add(laser);
+		}
+		Laser laser = new Laser(vertice.get(vertice.size-1), vertice.get(0), false);
+		lasers.add(laser);
 	}
 
 	@Override
@@ -40,9 +96,10 @@ public class TestScreen extends AbstractGameScreen {
 
 	@Override
 	public void drawBatch(SpriteBatch batch) {
-
-		batch.end();
-		batch.begin();
+		float delta = Gdx.graphics.getDeltaTime();
+		for (Laser laser : lasers) {
+			laser.render(batch, delta);
+		}
 
 	}
 
